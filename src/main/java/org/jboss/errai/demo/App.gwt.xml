@@ -4,6 +4,15 @@
 
 <module rename-to="app">
   <inherits name="org.jboss.errai.enterprise.All" />
+  <inherits name="org.jboss.errai.validation.Validation"/>
+  <inherits name="org.hibernate.validator.HibernateValidator"/>
+  <inherits name="org.gwtbootstrap3.GwtBootstrap3"/>
+  <inherits name="org.uberfire.commons.UberfireCommons"/>
+  <inherits name="org.uberfire.java.nio.UberfireNIO2Model"/>
+  <inherits name="org.uberfire.ext.widgets.table.UberfireTableWidget"/>
+  <inherits name="org.livespark.widgets.crud.LiveSparkCRUDWidget"/>
+  <inherits name="org.livespark.formmodeler.rendering.FormModelerRenderingAPI"/>
+  <inherits name='com.google.gwt.user.theme.clean.Clean'/>
 
   <set-property name="gwt.logging.enabled" value="TRUE"/>
   <!-- Uncomment the line below to enable all logging statements (default 
