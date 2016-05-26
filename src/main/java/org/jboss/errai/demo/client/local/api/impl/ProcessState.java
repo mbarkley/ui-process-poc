@@ -15,13 +15,23 @@
  */
 
 
-package org.jboss.errai.demo.client.local.api;
+package org.jboss.errai.demo.client.local.api.impl;
+
+import org.jboss.errai.common.client.function.Function;
+import org.jboss.errai.common.client.function.Optional;
+import org.jboss.errai.demo.client.local.api.impl.ProcessDefinition.Step;
 
 /**
  * @author Max Barkley <mbarkley@redhat.com>
  */
-public interface ProcessInvoker {
+public class ProcessState {
+  final ProcessDefinition process;
+  Step currentStep;
+  Object currentInput;
+  Optional<Function<? super Object, ?>> currentTransformer;
 
-  void start(String processId, Object input);
+  ProcessState(final ProcessDefinition process) {
+    this.process = process;
+  }
 
 }

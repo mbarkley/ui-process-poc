@@ -17,6 +17,8 @@
 
 package org.jboss.errai.demo.client.local;
 
+import java.util.ArrayList;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -45,7 +47,7 @@ public class WelcomePage implements IsElement {
 
   @PostConstruct
   private void init() {
-    start.addEventListener("click", e -> invoker.start("CustomerListView"), true);
+    start.addEventListener("click", e -> invoker.start("CustomerListView", new ArrayList<>()), true);
     start.setTextContent("Start");
     root.appendChild(start);
   }

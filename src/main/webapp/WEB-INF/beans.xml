@@ -3,17 +3,21 @@
 
   <scan>
     <!-- These exclusions were added by Errai to avoid deploying client-side classes to the server -->
-    <exclude name = "org.jboss.errai.demo.client.local.BindableEmailAnchor" />
-    <exclude name = "org.jboss.errai.demo.client.local.DoubleClick" />
-    <exclude name = "org.jboss.errai.demo.client.local.ContactEditor" />
-    <exclude name = "org.jboss.errai.demo.client.local.AppSetup" />
-    <exclude name = "org.jboss.errai.demo.client.local.ContactPresenter" />
-    <exclude name = "org.jboss.errai.demo.client.local.DateConverter" />
-    <exclude name = "org.jboss.errai.demo.client.local.NavBar" />
-    <exclude name = "org.jboss.errai.demo.client.local.BindableTelAnchor" />
-    <exclude name = "org.jboss.errai.demo.client.local.ContactDisplay" />
-    <exclude name = "org.jboss.errai.demo.client.local.Click" />
-    <exclude name = "org.jboss.errai.demo.client.local.ContactListPage" />
+    <exclude name = "org.jboss.errai.demo.client.local.WelcomePage" />
+    <exclude name = "org.jboss.errai.demo.client.local.CustomerFormPage" />
+    <exclude name = "org.jboss.errai.demo.client.local.CustomerListView" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.ProcessInvoker" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.ProcessInput" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.impl.ProcessDefinition$Step" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.impl.ProcessManager" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.impl.ProcessDefinition$Builder$StepBuilder" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.impl.ProcessDefinition$Builder" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.impl.ProcessState" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.impl.ProcessDefinition$Builder$LinkBuilder" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.impl.ProcessDefinition$Link" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.impl.ProcessDefinition" />
+    <exclude name = "org.jboss.errai.demo.client.local.api.ProcessOutput" />
+    <exclude name = "org.jboss.errai.demo.client.local.CustomerView" />
     <!-- End of Errai exclusions -->
   </scan>
 </beans>

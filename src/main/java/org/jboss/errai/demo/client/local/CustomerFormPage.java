@@ -24,13 +24,10 @@ import org.jboss.errai.common.client.api.IsElement;
 import org.jboss.errai.common.client.dom.Button;
 import org.jboss.errai.common.client.dom.Div;
 import org.jboss.errai.common.client.dom.HTMLElement;
-import org.jboss.errai.databinding.client.api.DataBinder;
 import org.jboss.errai.demo.client.local.api.ProcessInput;
 import org.jboss.errai.demo.client.local.api.ProcessOutput;
 import org.jboss.errai.demo.client.shared.CustomerFormModel;
 import org.jboss.errai.ui.nav.client.local.Page;
-import org.jboss.errai.ui.shared.api.annotations.AutoBound;
-import org.jboss.errai.ui.shared.api.annotations.Bound;
 
 import com.google.gwt.dom.client.Element;
 
@@ -50,11 +47,6 @@ public class CustomerFormPage implements IsElement {
   private Div root;
 
   @Inject
-  @AutoBound
-  private DataBinder<CustomerFormModel> binder;
-
-  @Inject
-  @Bound
   private CustomerView form;
 
   @Inject
@@ -62,11 +54,15 @@ public class CustomerFormPage implements IsElement {
 
   @PostConstruct
   private void init() {
-    root.appendChild(asElement(form.getElement()));
+    root.appendChild(form.getElement());
     root.appendChild(submit);
-    form.setModel(input.get());
-    submit.addEventListener("click", e -> output.submit(binder.getModel()), true);
+    form.setValue(input.get());
+    submit.addEventListener("click", e -> submit(), false);
     submit.setTextContent("Submit");
+  }
+
+  private void submit() {
+    output.submit(form.getValue());
   }
 
   @Override

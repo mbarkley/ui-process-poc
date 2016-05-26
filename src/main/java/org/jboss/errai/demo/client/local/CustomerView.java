@@ -17,75 +17,64 @@
 
 package org.jboss.errai.demo.client.local;
 
-import static java.util.Collections.singletonList;
+import java.util.Arrays;
 
-import java.util.List;
-
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
+import org.jboss.errai.common.client.api.IsElement;
+import org.jboss.errai.common.client.dom.HTMLElement;
+import org.jboss.errai.common.client.dom.TextInput;
+import org.jboss.errai.common.client.ui.ElementWrapperWidget;
+import org.jboss.errai.databinding.client.BoundUtil;
+import org.jboss.errai.databinding.client.api.DataBinder;
 import org.jboss.errai.demo.client.shared.Customer;
 import org.jboss.errai.demo.client.shared.CustomerFormModel;
+import org.jboss.errai.ui.shared.TemplateWidget;
+import org.jboss.errai.ui.shared.api.annotations.AutoBound;
 import org.jboss.errai.ui.shared.api.annotations.Bound;
-import org.jboss.errai.ui.shared.api.annotations.DataField;
-import org.livespark.formmodeler.rendering.client.view.FormView;
 
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.TakesValue;
-import com.google.gwt.user.client.ui.TextBox;
 
 /**
  * @author Max Barkley <mbarkley@redhat.com>
  */
-public class CustomerView extends FormView<CustomerFormModel> implements TakesValue<CustomerFormModel> {
+public class CustomerView implements TakesValue<CustomerFormModel>, IsElement {
+
+  @Inject
+  @AutoBound
+  private DataBinder<CustomerFormModel> binder;
 
   @Inject
   @Bound(property = "customer.name")
-  @DataField
-  private TextBox customerName;
+  private TextInput customerName;
 
-  @Override
-  protected void initForm() {
-    validator.registerInput("customerName", customerName);
+  @PostConstruct
+  private void init() {
+    Element e = BoundUtil.asElement(customerName);
+    new TemplateWidget(e, Arrays.asList(ElementWrapperWidget.getWidget(e))).onAttach();
   }
 
-  @Override
   public void setReadOnly(boolean readOnly) {
     customerName.setReadOnly(readOnly);
   }
 
   @Override
-  protected int getEntitiesCount() {
-    return 1;
-  }
-
-  @Override
-  protected List getEntities() {
-    return singletonList(getModel().getCustomer());
-  }
-
-  @Override
-  protected void initEntities() {
-    if (getModel().getCustomer() == null) {
-      getModel().setCustomer(new Customer());
-    }
-  }
-
-  @Override
-  public boolean doExtraValidations() {
-    return true;
-  }
-
-  @Override
-  public void beforeDisplay() {
-  }
-
-  @Override
-  public void setValue(CustomerFormModel value) {
-    setModel(value);
+  public void setValue(CustomerFormModel model) {
+    if (model.getCustomer() == null)
+      model.setCustomer(new Customer());
+    binder.setModel(model);
   }
 
   @Override
   public CustomerFormModel getValue() {
-    return getModel();
+    return binder.getModel();
+  }
+
+  @Override
+  public HTMLElement getElement() {
+    return customerName;
   }
 
 }
