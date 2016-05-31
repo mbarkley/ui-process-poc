@@ -17,8 +17,6 @@
 
 package org.jboss.errai.demo.client.local;
 
-import java.util.ArrayList;
-
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -26,9 +24,10 @@ import org.jboss.errai.common.client.api.IsElement;
 import org.jboss.errai.common.client.dom.Button;
 import org.jboss.errai.common.client.dom.Div;
 import org.jboss.errai.common.client.dom.HTMLElement;
-import org.jboss.errai.demo.client.local.api.ProcessInvoker;
 import org.jboss.errai.ui.nav.client.local.DefaultPage;
 import org.jboss.errai.ui.nav.client.local.Page;
+import org.livespark.process.api.ProcessExecutor;
+import org.livespark.process.api.ProcessFactory;
 
 /**
  * @author Max Barkley <mbarkley@redhat.com>
@@ -43,11 +42,16 @@ public class WelcomePage implements IsElement {
   private Button start;
 
   @Inject
-  private ProcessInvoker invoker;
+  private ProcessExecutor executor;
+
+  @Inject
+  private ProcessFactory factory;
 
   @PostConstruct
   private void init() {
-    start.addEventListener("click", e -> invoker.start("CustomerListView", new ArrayList<>()), true);
+    start.setOnclick(e -> {
+      executor.execute(factory.getProcessFlow("Main"));
+    });
     start.setTextContent("Start");
     root.appendChild(start);
   }

@@ -24,10 +24,10 @@ import org.jboss.errai.common.client.api.IsElement;
 import org.jboss.errai.common.client.dom.Button;
 import org.jboss.errai.common.client.dom.Div;
 import org.jboss.errai.common.client.dom.HTMLElement;
-import org.jboss.errai.demo.client.local.api.ProcessInput;
-import org.jboss.errai.demo.client.local.api.ProcessOutput;
 import org.jboss.errai.demo.client.shared.CustomerFormModel;
 import org.jboss.errai.ui.nav.client.local.Page;
+import org.livespark.process.client.local.ProcessInput;
+import org.livespark.process.client.local.ProcessOutput;
 
 import com.google.gwt.dom.client.Element;
 

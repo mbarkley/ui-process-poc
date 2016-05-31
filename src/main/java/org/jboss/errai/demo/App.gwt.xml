@@ -13,6 +13,8 @@
   <inherits name="org.livespark.widgets.crud.LiveSparkCRUDWidget"/>
   <inherits name="org.livespark.formmodeler.rendering.FormModelerRenderingAPI"/>
   <inherits name='com.google.gwt.user.theme.clean.Clean'/>
+  <inherits name='org.livespark.process.ProcessAPI'/>
+  <inherits name='org.livespark.process.Process'/>
 
   <set-property name="gwt.logging.enabled" value="TRUE"/>
   <!-- Uncomment the line below to enable all logging statements (default 

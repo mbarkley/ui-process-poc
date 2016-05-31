@@ -28,13 +28,15 @@ import org.jboss.errai.common.client.dom.Div;
 import org.jboss.errai.common.client.dom.HTMLElement;
 import org.jboss.errai.databinding.client.api.DataBinder;
 import org.jboss.errai.databinding.client.components.ListComponent;
-import org.jboss.errai.demo.client.local.api.ProcessInput;
-import org.jboss.errai.demo.client.local.api.ProcessOutput;
 import org.jboss.errai.demo.client.shared.Customer;
 import org.jboss.errai.demo.client.shared.CustomerFormModel;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.shared.api.annotations.AutoBound;
 import org.jboss.errai.ui.shared.api.annotations.Bound;
+import org.livespark.process.api.Command;
+import org.livespark.process.api.CrudOperation;
+import org.livespark.process.client.local.ProcessInput;
+import org.livespark.process.client.local.ProcessOutput;
 
 /**
  * @author Max Barkley <mbarkley@redhat.com>
@@ -46,7 +48,7 @@ public class CustomerListView implements IsElement {
   private ProcessInput<List<CustomerFormModel>> input;
 
   @Inject
-  private ProcessOutput<CustomerFormModel> create;
+  private ProcessOutput<Command<CrudOperation, CustomerFormModel>> create;
 
   @Inject
   @AutoBound
@@ -69,13 +71,20 @@ public class CustomerListView implements IsElement {
 
     createButton.addEventListener("click", e -> onCreate(), true);
     createButton.setTextContent("Create");
-    customers.addComponentCreationHandler(view -> view.setReadOnly(true));
+    customers.addComponentCreationHandler(view -> {
+      view.setReadOnly(true);
+      view.getElement().setOnclick(e -> onUpdate(view.getValue()));
+    });
 
     binder.setModel(input.get());
   }
 
+  private void onUpdate(final CustomerFormModel value) {
+    create.submit(new Command<>(CrudOperation.UPDATE, value));
+  }
+
   private void onCreate() {
-    create.submit(new CustomerFormModel(new Customer()));
+    create.submit(new Command<>(CrudOperation.CREATE, new CustomerFormModel(new Customer())));
   }
 
   @Override
