@@ -17,15 +17,33 @@
 package org.jboss.errai.demo.client.local;
 
 import static org.jboss.errai.common.client.dom.Window.getDocument;
+import static org.jboss.errai.demo.client.local.Constants.CONTACT_FORM;
+import static org.jboss.errai.demo.client.local.Constants.CONTACT_LIST;
+import static org.jboss.errai.demo.client.local.Constants.CONTACT_LOADER;
+import static org.jboss.errai.demo.client.local.Constants.CONTACT_PENDING;
+import static org.jboss.errai.demo.client.local.Constants.CONTACT_SAVER;
+import static org.jboss.errai.demo.client.local.Constants.CONTACT_UPDATER;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Named;
 
-import org.jboss.errai.common.client.dom.DOMUtil;
 import org.jboss.errai.common.client.dom.Body;
+import org.jboss.errai.common.client.dom.DOMUtil;
+import org.jboss.errai.demo.client.shared.Contact;
 import org.jboss.errai.ioc.client.api.EntryPoint;
 import org.jboss.errai.ui.nav.client.local.NavigationPanel;
+import org.livespark.process.api.Command;
+import org.livespark.process.api.CrudOperation;
+import org.livespark.process.api.ProcessFactory;
+import org.livespark.process.api.ProcessFlow;
+import org.livespark.process.api.Step;
+import org.livespark.process.api.Unit;
 
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -47,11 +65,84 @@ public class AppSetup {
   @Inject
   private NavBar navbar;
 
+  @Inject
+  private ProcessFactory factory;
+
+  @Inject
+  @Named(CONTACT_FORM)
+  private Step<Contact, Optional<Contact>> form;
+
+  @Inject
+  @Named(CONTACT_LIST)
+  private Step<List<Contact>, Command<CrudOperation, Contact>> list;
+
+  @Inject
+  @Named(CONTACT_LOADER)
+  private Step<Unit, List<Contact>> loader;
+
+  @Inject
+  @Named(CONTACT_SAVER)
+  private Step<Contact, Unit> saver;
+
+  @Inject
+  @Named(CONTACT_UPDATER)
+  private Step<Contact, Unit> updater;
+
+  @Inject
+  @Named(CONTACT_PENDING)
+  private Step<Unit, Unit> pending;
+
   @PostConstruct
   public void init() {
+    initPageBody();
+    initProcesses();
+  }
+
+  private void initPageBody() {
     RootPanel.get("rootPanel").add(navPanel);
     final Body body = getDocument().getBody();
     body.insertBefore(navbar.getElement(), DOMUtil.getFirstChildElement(body).orElse(null));
+  }
+
+  private void initProcesses() {
+    factory.registerStep(CONTACT_FORM, form);
+    factory.registerStep(CONTACT_LIST, list);
+    factory.registerStep(CONTACT_LOADER, loader);
+    factory.registerStep(CONTACT_SAVER, saver);
+    factory.registerStep(CONTACT_UPDATER, updater);
+
+    final String MAIN = "Main";
+    final Supplier<ProcessFlow<Unit, Unit>> mainSupplier = () -> factory.getProcessFlow(MAIN);
+
+    final ProcessFlow<Unit, Unit> mainProcess = factory
+      .buildProcessFrom(loader)
+      .andThen(list)
+      .transition(command -> {
+        final Step<Contact, Unit> op;
+        switch (command.commandType) {
+        case CREATE:
+          op = saver;
+          break;
+        case UPDATE:
+          op = updater;
+          break;
+        default:
+          throw new RuntimeException();
+        }
+
+        return factory
+                .buildProcessFrom(form)
+                .butFirst((final Unit u) -> command.value)
+                .transition(res -> res
+                        .map(createdOrUpdated -> factory
+                                .buildProcessFrom(op)
+                                .butFirst((final Unit unit) -> createdOrUpdated)
+                                .andThen(pending)
+                                .andThen(mainSupplier))
+                        .orElseGet(mainSupplier));
+      });
+
+    factory.registerProcess(MAIN, mainProcess);
   }
 
 }

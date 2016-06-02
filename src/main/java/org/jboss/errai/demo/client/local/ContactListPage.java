@@ -16,36 +16,23 @@
 
 package org.jboss.errai.demo.client.local;
 
-import static org.jboss.errai.demo.client.shared.Operation.OperationType.CREATE;
-import static org.jboss.errai.demo.client.shared.Operation.OperationType.DELETE;
-import static org.jboss.errai.demo.client.shared.Operation.OperationType.UPDATE;
-
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.event.Observes;
 import javax.inject.Inject;
 
-import org.jboss.errai.bus.client.api.ClientMessageBus;
-import org.jboss.errai.common.client.api.Caller;
 import org.jboss.errai.common.client.dom.Anchor;
-import org.jboss.errai.common.client.dom.Button;
 import org.jboss.errai.common.client.dom.DOMUtil;
-import org.jboss.errai.common.client.dom.Form;
 import org.jboss.errai.databinding.client.api.DataBinder;
 import org.jboss.errai.databinding.client.api.StateSync;
 import org.jboss.errai.databinding.client.components.ListComponent;
 import org.jboss.errai.demo.client.shared.Contact;
-import org.jboss.errai.demo.client.shared.ContactOperation;
-import org.jboss.errai.demo.client.shared.ContactStorageService;
-import org.jboss.errai.demo.client.shared.Operation;
-import org.jboss.errai.enterprise.client.jaxrs.api.ResponseCallback;
-import org.jboss.errai.ui.nav.client.local.DefaultPage;
 import org.jboss.errai.ui.nav.client.local.NavigationPanel;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.nav.client.local.PageHiding;
+import org.jboss.errai.ui.nav.client.local.PageShowing;
 import org.jboss.errai.ui.nav.client.local.PageShown;
 import org.jboss.errai.ui.shared.api.annotations.AutoBound;
 import org.jboss.errai.ui.shared.api.annotations.Bound;
@@ -53,10 +40,12 @@ import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.SinkNative;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
-import org.slf4j.Logger;
+import org.livespark.process.api.Command;
+import org.livespark.process.api.CrudOperation;
+import org.livespark.process.client.local.ProcessInput;
+import org.livespark.process.client.local.ProcessOutput;
 
 import com.google.gwt.event.dom.client.ClickEvent;
-import com.google.gwt.http.client.Response;
 import com.google.gwt.user.client.Event;
 
 /**
@@ -86,7 +75,7 @@ import com.google.gwt.user.client.Event;
  * Instances of this type should be obtained via Errai IoC, either by using {@link Inject} in another container managed
  * bean, or by programmatic lookup through the bean manager.
  */
-@Page(role = DefaultPage.class, path = "/contacts")
+@Page(path = "/contacts")
 @Templated(value = "contact-page.html#contact-list", stylesheet = "contact-page.css")
 public class ContactListPage {
 
@@ -101,15 +90,7 @@ public class ContactListPage {
 
   @Inject
   @DataField
-  private Form modal;
-
-  @Inject
-  @DataField("modal-fields")
-  private ContactEditor editor;
-
-  @Inject
-  @DataField("modal-delete")
-  private Button delete;
+  private ContactModal modal;
 
   @Inject
   private NavBar navbar;
@@ -120,30 +101,17 @@ public class ContactListPage {
   @Inject
   private Anchor sortContactsAnchor;
 
-  /**
-   * This is a simple interface for calling a remote HTTP service. Behind this interface, Errai has generated an HTTP
-   * request to the service defined by {@link ContactStorageService} (a JaxRS service).
-   */
   @Inject
-  private Caller<ContactStorageService> contactService;
+  private ProcessInput<List<Contact>> input;
 
   @Inject
-  private ClientMessageBus bus;
-
-  @Inject
-  private Logger logger;
+  private ProcessOutput<Command<CrudOperation, Contact>> output;
 
   /**
    * Register handlers and populate the list of {@link Contact Contacts}.
    */
   @PostConstruct
   private void setup() {
-    /*
-     * Triggers an HTTP request to the ContactStorageService. The call back will be invoked asynchronously to display
-     * all retrieved contacts.
-     */
-    contactService.call((List<Contact> contacts) -> binder.getModel().addAll(contacts)).getAllContacts();
-
     // Remove placeholder table row from template.
     DOMUtil.removeAllElementChildren(list.getElement());
 
@@ -158,11 +126,16 @@ public class ContactListPage {
      */
     newContactAnchor.setHref("javascript:void(0);");
     newContactAnchor.setTextContent("Create Contact");
-    newContactAnchor.setOnclick(e -> displayFormWithNewContact());
+    newContactAnchor.setOnclick(e -> onNewContactClick(null));
 
     sortContactsAnchor.setHref("javascript:");
     sortContactsAnchor.setTextContent("Sort By Nickname");
     sortContactsAnchor.setOnclick(e -> sortContactsByName());
+  }
+
+  @PageShowing
+  private void updateContactList() {
+    binder.getModel().addAll(input.get());
   }
 
   /**
@@ -196,72 +169,7 @@ public class ContactListPage {
   @SinkNative(Event.ONCLICK)
   @EventHandler("new-contact")
   public void onNewContactClick(final Event event) {
-    displayFormWithNewContact();
-  }
-
-  /**
-   * This is an Errai UI native event handler. The element for which this handler is regsitered is in this class's HTML
-   * template file and has the {@code modal-submit} CSS class.
-   * <p>
-   * Because there is no {@code modal-submit} {@link DataField} in this class, this method's parameter is a non-specific
-   * {@link Event} (rather than a more specific {@link ClickEvent}). For the same reason, the {@link SinkNative}
-   * annotation is required to specify which kinds of DOM events this method should handle.
-   * <p>
-   * This method displays and persists changes made to a {@link Contact} in the {@link ContactEditor}, whether it is a
-   * newly created or an previously existing {@link Contact}.
-   */
-  @SinkNative(Event.ONCLICK)
-  @EventHandler("modal-submit")
-  public void onModalSubmitClick(final Event event) {
-    if (modal.checkValidity()) {
-      DOMUtil.removeCSSClass(modal, "displayed");
-      if (binder.getModel().contains(editor.getValue())) {
-        updateContactFromEditor();
-      }
-      else {
-        createNewContactFromEditor();
-      }
-    }
-  }
-
-  /**
-   * This is an Errai UI native event handler. The element for which this handler is regsitered is in this class's HTML
-   * template file and has the {@code modal-cancel} CSS class.
-   * <p>
-   * Because there is no {@code modal-cancel} {@link DataField} in this class, this method's parameter is a non-specific
-   * {@link Event} (rather than a more specific {@link ClickEvent}). For the same reason, the {@link SinkNative}
-   * annotation is required to specify which kinds of DOM events this method should handle.
-   * <p>
-   * This method hides the ContactEditor modal form and resets the bound model.
-   */
-  @SinkNative(Event.ONCLICK)
-  @EventHandler("modal-cancel")
-  public void onModalCancelClick(final Event event) {
-    DOMUtil.removeCSSClass(modal, "displayed");
-  }
-
-  /**
-   * This is an Errai UI native event handler. The element for which this handler is regsitered is in this class's HTML
-   * template file and has the {@code modal-delete} CSS class.
-   * <p>
-   * Because there is a {@code modal-delete} {@link DataField} in this class, this method's parameter indicates that
-   * this handles click events by accepting {@link ClickEvent} as its parameter.
-   * <p>
-   * This method removes a {@link Contact} from the displayed table and makes an HTTP request to delete the contact from
-   * persistent storage on the server.
-   */
-  @EventHandler("modal-delete")
-  public void onModalDeleteClick(final ClickEvent event) {
-    if (binder.getModel().contains(editor.getValue())) {
-      final Contact deleted = editor.getValue();
-      contactService.call((ResponseCallback) response -> {
-        if (response.getStatusCode() >= 200 && response.getStatusCode() < 300) {
-          binder.getModel().remove(deleted);
-        }
-      }).delete(editor.getValue().getId());
-      editor.setValue(new Contact());
-      DOMUtil.removeCSSClass(modal, "displayed");
-    }
+    output.submit(new Command<>(CrudOperation.CREATE, new Contact()));
   }
 
   /**
@@ -271,7 +179,7 @@ public class ContactListPage {
    */
   public void editComponent(final @Observes @DoubleClick ContactDisplay component) {
     selectComponent(component);
-    editModel(component.getValue());
+    output.submit(new Command<>(CrudOperation.UPDATE, component.getValue()));
   }
 
   /**
@@ -286,106 +194,6 @@ public class ContactListPage {
       list.deselectAll();
       list.selectComponent(component);
     }
-  }
-
-  /**
-   * This is called in response to Errai CDI {@link javax.enterprise.event.Event Events} fired from the server when a
-   * new {@link Contact} is created. In this way we can display newly created contacts from other browser sessions.
-   */
-  public void onRemoteCreated(final @Observes @Operation(CREATE) ContactOperation contactOperation) {
-    if (sourceIsNotThisClient(contactOperation)) {
-      binder.getModel().add(contactOperation.getContact());
-    }
-  }
-
-  /**
-   * This is called in response to Errai CDI {@link javax.enterprise.event.Event Events} fired from the server when an
-   * existing {@link Contact} is updated. In this way we can display new property values for contacts when they are
-   * updated from other browser sessions.
-   */
-  public void onRemoteUpdated(final @Observes @Operation(UPDATE) ContactOperation contactOperation) {
-    if (sourceIsNotThisClient(contactOperation)) {
-      final int indexOf = binder.getModel().indexOf(contactOperation.getContact());
-      if (indexOf == -1) {
-        logger.warn("Received update before creation for " + contactOperation.getContact() + " from " + contactOperation.getSourceQueueSessionId());
-        binder.getModel().add(contactOperation.getContact());
-      } else {
-        binder.getModel().set(indexOf, contactOperation.getContact());
-      }
-    }
-  }
-
-  /**
-   * This is called in response to Errai CDI {@link javax.enterprise.event.Event Events} fired from the server when an
-   * existing {@link Contact} is deleted. In this way we can remove displayed contacts when they are deleted in other
-   * browser sessions.
-   */
-  public void onRemoteDelete(final @Observes @Operation(DELETE) Long id) {
-    final Iterator<Contact> contactIter = binder.getModel().iterator();
-    while (contactIter.hasNext()) {
-      if (id.equals(contactIter.next().getId())) {
-        contactIter.remove();
-        break;
-      }
-    }
-  }
-
-  private void createNewContactFromEditor() {
-    final Contact editorModel = editor.getValue();
-    // Adding this model to the list will create and display a new, bound ContactDisplay in the table.
-    binder.getModel().add(editorModel);
-    contactService.call((ResponseCallback) response -> {
-      // Set the id if we successfully create this contact.
-      if (response.getStatusCode() == Response.SC_CREATED) {
-        final String createdUri = response.getHeader("Location");
-        final String idString = createdUri.substring(createdUri.lastIndexOf('/')+1);
-        final long id = Long.parseLong(idString);
-        editorModel.setId(id);
-      }
-    }).create(new ContactOperation(editorModel, bus.getSessionId()));
-  }
-
-  private void displayFormWithNewContact() {
-    editor.setValue(new Contact());
-    displayModal(false);
-  }
-
-  private void updateContactFromEditor() {
-    /*
-     * When editting a contact we paused binding so that changes from the UI do not propogate to the model until
-     * "submit" is clicked. This call updates the model with all changes made in the UI while binding was paused.
-     */
-    editor.syncStateFromUI();
-    contactService.call().update(new ContactOperation(editor.getValue(), bus.getSessionId()));
-  }
-
-  /**
-   * For ignoring remote events that originate from this client.
-   */
-  private boolean sourceIsNotThisClient(final ContactOperation contactOperation) {
-    return contactOperation.getSourceQueueSessionId() == null || !contactOperation.getSourceQueueSessionId().equals(bus.getSessionId());
-  }
-
-  /**
-   * If the parameter is true then this displays a form for editting (with a delete button). Otherwise show a form for
-   * new contacts (no delete button).
-   */
-  private void displayModal(final boolean showDelete) {
-    if (showDelete) {
-      delete.getStyle().removeProperty("display");
-    } else {
-      delete.getStyle().setProperty("display", "none");
-    }
-    DOMUtil.addCSSClass(modal, "displayed");
-  }
-
-  private void editModel(final Contact model) {
-    /*
-     * This sets the editor model with data binding paused so that changes to the model are not propogated until the
-     * user clicks "submit".
-     */
-    editor.setValuePaused(model);
-    displayModal(true);
   }
 
   private void sortContactsByName() {
