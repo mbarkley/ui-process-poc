@@ -67,23 +67,23 @@
      </dependency>
      <dependency>
        <groupId>org.livespark</groupId>
-       <artifactId>livespark-process-api</artifactId>
+       <artifactId>livespark-app-flow-api</artifactId>
        <version>0.0.1-SNAPSHOT</version>
      </dependency>
      <dependency>
        <groupId>org.livespark</groupId>
-       <artifactId>livespark-process-api</artifactId>
+       <artifactId>livespark-app-flow-api</artifactId>
        <version>0.0.1-SNAPSHOT</version>
        <classifier>sources</classifier>
      </dependency>
      <dependency>
        <groupId>org.livespark</groupId>
-       <artifactId>livespark-process-client</artifactId>
+       <artifactId>livespark-app-flow-client</artifactId>
        <version>0.0.1-SNAPSHOT</version>
      </dependency>
      <dependency>
        <groupId>org.livespark</groupId>
-       <artifactId>livespark-process-client</artifactId>
+       <artifactId>livespark-app-flow-client</artifactId>
        <version>0.0.1-SNAPSHOT</version>
        <classifier>sources</classifier>
      </dependency>
@@ -139,25 +139,25 @@
 
     <dependency>
       <groupId>org.livespark</groupId>
-      <artifactId>livespark-process-api</artifactId>
+      <artifactId>livespark-app-flow-api</artifactId>
     </dependency>
 
     <dependency>
       <groupId>org.livespark</groupId>
-      <artifactId>livespark-process-api</artifactId>
+      <artifactId>livespark-app-flow-api</artifactId>
       <scope>provided</scope>
       <classifier>sources</classifier>
     </dependency>
 
     <dependency>
       <groupId>org.livespark</groupId>
-      <artifactId>livespark-process-client</artifactId>
+      <artifactId>livespark-app-flow-client</artifactId>
       <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.livespark</groupId>
-      <artifactId>livespark-process-client</artifactId>
+      <artifactId>livespark-app-flow-client</artifactId>
       <scope>provided</scope>
       <classifier>sources</classifier>
     </dependency>
@@ -243,6 +243,7 @@
           <soyc>false</soyc>
           <hostedWebapp>src/main/webapp</hostedWebapp>
           <strict>true</strict>
+          <optimizationLevel>0</optimizationLevel>
         </configuration>
         <dependencies>
           <dependency>

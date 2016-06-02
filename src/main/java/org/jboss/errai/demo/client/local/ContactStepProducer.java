@@ -41,11 +41,11 @@ import org.jboss.errai.demo.client.shared.ContactOperation;
 import org.jboss.errai.demo.client.shared.ContactStorageService;
 import org.jboss.errai.enterprise.client.jaxrs.api.ResponseCallback;
 import org.jboss.errai.ui.nav.client.local.TransitionTo;
-import org.livespark.process.api.Command;
-import org.livespark.process.api.CrudOperation;
-import org.livespark.process.api.Step;
-import org.livespark.process.api.Unit;
-import org.livespark.process.client.local.CDIStepFactory;
+import org.livespark.flow.api.Command;
+import org.livespark.flow.api.CrudOperation;
+import org.livespark.flow.api.Step;
+import org.livespark.flow.api.Unit;
+import org.livespark.flow.client.local.CDIStepFactory;
 
 @Dependent
 public class ContactStepProducer {
@@ -75,11 +75,6 @@ public class ContactStepProducer {
     return new Step<Unit, List<Contact>>() {
 
       @Override
-      public boolean hasUnitInput() {
-        return true;
-      }
-
-      @Override
       public void execute(final Unit input, final Consumer<List<Contact>> callback) {
         contactService
           .call((final List<Contact> list) -> callback.accept(list))
@@ -99,11 +94,6 @@ public class ContactStepProducer {
     return new Step<Contact, Unit>() {
 
       @Override
-      public boolean hasUnitInput() {
-        return false;
-      }
-
-      @Override
       public void execute(final Contact input, final Consumer<Unit> callback) {
         contactService
           .call((ResponseCallback) o -> callback.accept(Unit.INSTANCE))
@@ -121,11 +111,6 @@ public class ContactStepProducer {
   @Named(CONTACT_UPDATER)
   public Step<Contact, Unit> createUpdater() {
     return new Step<Contact, Unit>() {
-
-      @Override
-      public boolean hasUnitInput() {
-        return false;
-      }
 
       @Override
       public void execute(final Contact input, final Consumer<Unit> callback) {
@@ -148,24 +133,19 @@ public class ContactStepProducer {
      * For now this has no closing action. Eventually we will want the concept of an "addidtive" step that
      * prevents the previous step from closing until it is finished.
      */
-    return stepFactory.createCdiStep(() -> listTransition.go(), () -> {}, CONTACT_LIST, false);
+    return stepFactory.createCdiStep(() -> listTransition.go(), () -> {}, CONTACT_LIST);
   }
 
   @Produces
   @Named(CONTACT_FORM)
   public Step<Contact, Optional<Contact>> createForm() {
-    return stepFactory.createCdiStep(() -> display.fire(true), () -> display.fire(false), CONTACT_FORM, false);
+    return stepFactory.createCdiStep(() -> display.fire(true), () -> display.fire(false), CONTACT_FORM);
   }
 
   @Produces
   @Named(CONTACT_PENDING)
   public Step<Unit,Unit> createPending() {
     return new Step<Unit, Unit>() {
-
-      @Override
-      public boolean hasUnitInput() {
-        return true;
-      }
 
       @Override
       public void execute(final Unit input, final Consumer<Unit> callback) {

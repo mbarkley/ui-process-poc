@@ -38,12 +38,12 @@ import org.jboss.errai.common.client.dom.DOMUtil;
 import org.jboss.errai.demo.client.shared.Contact;
 import org.jboss.errai.ioc.client.api.EntryPoint;
 import org.jboss.errai.ui.nav.client.local.NavigationPanel;
-import org.livespark.process.api.Command;
-import org.livespark.process.api.CrudOperation;
-import org.livespark.process.api.ProcessFactory;
-import org.livespark.process.api.ProcessFlow;
-import org.livespark.process.api.Step;
-import org.livespark.process.api.Unit;
+import org.livespark.flow.api.Command;
+import org.livespark.flow.api.CrudOperation;
+import org.livespark.flow.api.AppFlowFactory;
+import org.livespark.flow.api.AppFlow;
+import org.livespark.flow.api.Step;
+import org.livespark.flow.api.Unit;
 
 import com.google.gwt.user.client.ui.RootPanel;
 
@@ -66,7 +66,7 @@ public class AppSetup {
   private NavBar navbar;
 
   @Inject
-  private ProcessFactory factory;
+  private AppFlowFactory factory;
 
   @Inject
   @Named(CONTACT_FORM)
@@ -112,12 +112,12 @@ public class AppSetup {
     factory.registerStep(CONTACT_UPDATER, updater);
 
     final String MAIN = "Main";
-    final Supplier<ProcessFlow<Unit, Unit>> mainSupplier = () -> factory.getProcessFlow(MAIN);
+    final Supplier<AppFlow<Unit, Unit>> mainSupplier = () -> factory.getFlow(MAIN);
 
-    final ProcessFlow<Unit, Unit> mainProcess = factory
-      .buildProcessFrom(loader)
+    final AppFlow<Unit, Unit> mainProcess = factory
+      .buildFrom(loader)
       .andThen(list)
-      .transition(command -> {
+      .transitionTo(command -> {
         final Step<Contact, Unit> op;
         switch (command.commandType) {
         case CREATE:
@@ -131,11 +131,11 @@ public class AppSetup {
         }
 
         return factory
-                .buildProcessFrom(form)
+                .buildFrom(form)
                 .butFirst((final Unit u) -> command.value)
-                .transition(res -> res
-                        .map(createdOrUpdated -> factory
-                                .buildProcessFrom(op)
+                .transitionTo(res -> res
+                        .map((final Contact createdOrUpdated) -> factory
+                                .buildFrom(op)
                                 .butFirst((final Unit unit) -> createdOrUpdated)
                                 .andThen(pending)
                                 .andThen(mainSupplier))

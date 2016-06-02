@@ -4,8 +4,8 @@
 
 <module rename-to="app">
   <inherits name="org.jboss.errai.enterprise.All" />
-  <inherits name="org.livespark.process.ProcessAPI" />
-  <inherits name="org.livespark.process.Process" />
+  <inherits name="org.livespark.flow.AppFlowAPI" />
+  <inherits name="org.livespark.flow.AppFlow" />
 
   <set-property name="gwt.logging.enabled" value="TRUE"/>
   <!-- Uncomment the line below to enable all logging statements (default 

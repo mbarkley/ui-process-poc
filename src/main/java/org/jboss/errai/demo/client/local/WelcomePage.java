@@ -25,8 +25,8 @@ import org.jboss.errai.ui.nav.client.local.DefaultPage;
 import org.jboss.errai.ui.nav.client.local.Page;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
-import org.livespark.process.api.ProcessExecutor;
-import org.livespark.process.api.ProcessFactory;
+import org.livespark.flow.api.AppFlowExecutor;
+import org.livespark.flow.api.AppFlowFactory;
 
 @Page(role = DefaultPage.class)
 @Templated
@@ -37,15 +37,15 @@ public class WelcomePage {
   private Button start;
 
   @Inject
-  private ProcessFactory factory;
+  private AppFlowFactory factory;
 
   @Inject
-  private ProcessExecutor executor;
+  private AppFlowExecutor executor;
 
   @PostConstruct
   private void init() {
     start.setOnclick(e -> {
-      executor.execute(factory.getProcessFlow("Main"));
+      executor.execute(factory.getFlow("Main"));
     });
   }
 

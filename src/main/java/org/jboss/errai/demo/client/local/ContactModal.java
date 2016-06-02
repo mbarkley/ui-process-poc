@@ -32,8 +32,8 @@ import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.SinkNative;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
-import org.livespark.process.client.local.ProcessInput;
-import org.livespark.process.client.local.ProcessOutput;
+import org.livespark.flow.api.FlowInput;
+import org.livespark.flow.api.FlowOutput;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.Event;
@@ -56,10 +56,10 @@ public class ContactModal implements TakesValue<Contact> {
   private Button delete;
 
   @Inject
-  private ProcessInput<Contact> input;
+  private FlowInput<Contact> input;
 
   @Inject
-  private ProcessOutput<Optional<Contact>> output;
+  private FlowOutput<Optional<Contact>> output;
 
   @PostConstruct
   private void init() {

@@ -24,8 +24,8 @@ import javax.inject.Named;
 
 import org.jboss.errai.common.client.api.IsElement;
 import org.jboss.errai.common.client.dom.HTMLElement;
-import org.jboss.errai.common.client.dom.UnorderedList;
 import org.jboss.errai.common.client.dom.Node;
+import org.jboss.errai.common.client.dom.UnorderedList;
 import org.jboss.errai.common.client.function.Optional;
 import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.Templated;

@@ -40,10 +40,10 @@ import org.jboss.errai.ui.shared.api.annotations.DataField;
 import org.jboss.errai.ui.shared.api.annotations.EventHandler;
 import org.jboss.errai.ui.shared.api.annotations.SinkNative;
 import org.jboss.errai.ui.shared.api.annotations.Templated;
-import org.livespark.process.api.Command;
-import org.livespark.process.api.CrudOperation;
-import org.livespark.process.client.local.ProcessInput;
-import org.livespark.process.client.local.ProcessOutput;
+import org.livespark.flow.api.Command;
+import org.livespark.flow.api.CrudOperation;
+import org.livespark.flow.api.FlowInput;
+import org.livespark.flow.api.FlowOutput;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.user.client.Event;
@@ -102,10 +102,10 @@ public class ContactListPage {
   private Anchor sortContactsAnchor;
 
   @Inject
-  private ProcessInput<List<Contact>> input;
+  private FlowInput<List<Contact>> input;
 
   @Inject
-  private ProcessOutput<Command<CrudOperation, Contact>> output;
+  private FlowOutput<Command<CrudOperation, Contact>> output;
 
   /**
    * Register handlers and populate the list of {@link Contact Contacts}.
